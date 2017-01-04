@@ -109,6 +109,7 @@ int solve(void)
 
     a. 해당 칸을 확인하였음만 표시하고 아무 블록도 배치하지 않는다(다음 번의 재귀 호출에서 채워지도록 빈칸으로 유지).
     b. 해당 칸에 아래의 4가지 경우의 블록으로 배치해본다.
+    
     ![boardcover1](https://github.com/wonseokdjango/AOJ/images/boardcover1.png)
     
     
