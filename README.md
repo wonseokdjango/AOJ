@@ -112,6 +112,63 @@ int solve(void)
     
     ![boardcover1](https://github.com/wonseokdjango/AOJ/blob/master/images/boardcover1.png)
     
-    
-    
-    
+이 방법은 각 빈 칸에 대하여 5가지 경우의 수를 고려하게 되고 이는 rough하게 5^50개의 경우의 수를 세게 된다. 이는 2초 제한에 풀기에는 큰 경우의 수이므로 답을 구할 수는 있지만 TLE를 겪게 된다.
+
+다음으로 시도한 방법은 처음 접근한 방법인 brute force를 유지하되 순서를 강제화 시킨 방법이다. 매 재귀 호출마다 row-major로 가장 처음의 빈 칸을 찾으므로 row-major로 해당 빈 칸 이전에 위치하는 빈 칸들은 이미 모두 채워진 형태로 가정하는 것이 방법의 핵심이다. 
+
+1. 매 재귀 호출마다 보드에서 row-major로 가장 처음의 빈 칸을 찾는다.
+2. 빈 칸이 없다면 보드 덮기에 성공한 경우이다.
+3. 빈 칸에 대하여 아래의 경우를 고려한다.
+
+    ![boardcover1](https://github.com/wonseokdjango/AOJ/blob/master/images/boardcover2.png)
+
+실제로 row-major로 해당 빈칸 이전의 블록이 모두 채워져 있다고 가정한다면 고려의 대상이 되는 블록은 2, 5, 9, 12번째 블록 뿐이다. 따라서, 위의 4개 블록에 대하여 전-탐색을 수행하면 경우의 수가 4^(floor(50/3))이 되게 된다. 이 역시 2초 제한에 풀리기는 어려운 정도의 경우의 수인데 실제로 구현해보게 되면 n-th 재귀단계에서 놓은 블록의 형태에 따라 n+1-th 재귀단계에서 놓게 되는 블록이 크게 제한되므로 prunning이 커지게 된다. 예를 들어 2*3 크기의 보드를 덮기 위해서는 이론적으로 4^2개의 경우의 수를 고려해야하지만 실제로는 12개 밖에 고려하지 않는다. 이렇게 문제를 분석해보고 이론과 구현의 수행시간이 다르다는 것을 사전에 파악할 수 있는 것이 중요한데, 과연 실제로 문제를 풀 때 이런 부분들을 잘 대처할 수 있는지에 대한 자신이 없다.
+
+```c_cpp
+
+int solve(void)
+{
+    int r, c;
+    for (r = 0; r < H; ++r)
+    {
+        for (c = 0; c < W; ++c)
+        {
+            if (BOARD[r][c] == '.')
+                break;
+        }
+
+        if (c != W)
+            break;
+    }
+
+    if (r == H && c == W)
+        return 1;
+
+    int ret = 0;
+    for (int blk = 0; blk < NUMOFBLOCKS; ++blk)
+    {
+        int idx;
+        for (idx = 0; idx < NUMOFBLANKS; ++idx)
+        {
+            if (
+                !safe(r + dr[blk][idx], c + dc[blk][idx]) ||
+                BOARD[r + dr[blk][idx]][c + dc[blk][idx]] != '.')
+                break;
+        }
+        // you can put blk-th block.
+        if (idx == NUMOFBLANKS)
+        {
+            for (idx = 0; idx < NUMOFBLANKS; ++idx)
+                BOARD[r + dr[blk][idx]][c + dc[blk][idx]] = '#';
+            ret += solve();
+            for (idx = 0; idx < NUMOFBLANKS; ++idx)
+                BOARD[r + dr[blk][idx]][c + dc[blk][idx]] = '.';
+        }
+    }
+
+    return ret;
+}
+
+```
+
+---
