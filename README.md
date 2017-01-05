@@ -172,3 +172,55 @@ int solve(void)
 ```
 
 ---
+
+###문제ID : CLOCKSYNC(AOJ_CLOCKSYNC.cpp)
+
+2017.01.06.(금).
+
+직접 모든 경우를 전-탐색하는 방법으로 풀어낼 수 있는 문제이다. 전탐색을 적용하기 위해서는 아래와 같은 두 가지 사실을 깨닫는 것이 중요하다.
+
+    1. 버튼을 누르는 순서는 답에 영향을 주지 못한다.
+    2. 버튼을 4회 이상 누르는 것은 마무런 의미가 없다.
+
+따라서, 버튼을 누르는 순서를 0번~9번으로 강제화하고, 각 버튼의 클릭을 0회~3회로하여 전-탐색을하게 되면 총 4^10개의 경우의 수반을 탐색하게 된다. 이는 제한시간 내에 충분히 문제를 풀어낼 수 있다. 한편, 재귀함수의 경우 _(이번에 고려할 버튼의 번호, 현재까지 버튼의 클릭 횟수)_ 를 인자로 받아 고려할 가치가 없는 답의 후보는 적절히 prunning한다.
+
+```c_cpp
+
+void solve(int btn, int cnt)
+{
+    int clk;
+    for (clk = 0; clk < NUMOFCLOCKS && CLOCKS[clk] == 0; ++clk);
+    if (clk == NUMOFCLOCKS)
+    {
+        CNT = (CNT > cnt) ? cnt : CNT;
+        return;
+    }
+
+    if (btn == NUMOFBUTTONS)
+        return;
+
+    // click btn-th button.
+    int idx;
+    for (int click = 0; click < 4 && cnt + click < CNT; ++click)
+    {
+        idx = 0;
+        while (TRIGGER[btn][idx] != -1)
+        {
+            CLOCKS[TRIGGER[btn][idx]] = (CLOCKS[TRIGGER[btn][idx]] + 3 * click) % 12;
+            ++idx;
+        }
+
+        solve(btn + 1, cnt + click);
+
+        idx = 0;
+        while (TRIGGER[btn][idx] != -1)
+        {
+            CLOCKS[TRIGGER[btn][idx]] = (CLOCKS[TRIGGER[btn][idx]] + 9 * click) % 12;
+            ++idx;
+        }
+    }
+}
+
+```
+
+---
