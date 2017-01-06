@@ -242,7 +242,7 @@ void solve(int btn, int cnt)
 
 base case와 recursive step을 정하는 것 만으로 문제가 풀린다는 것을 직관적으로 알 수 있다. 이제 문제가 실제로 제한시간 내에 풀릴지 고려해봐야 한다. 대체, 왜, 어째서 학부때부터 항상 까먹는지 이해할 수 없는 master theorem이 사용된다.
 
-    ![masterthm](https://github.com/wonseokdjango/AOJ/blob/master/images/masterthm.png)
+![masterthm](https://github.com/wonseokdjango/AOJ/blob/master/images/masterthm.png)
 
 T(n) = 4 * T(n/4) + n 이므로 T(n) = nlgn이고, 이는 제한 시간에 문제를 충분히 풀 수 있음을 보여준다.
 
