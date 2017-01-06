@@ -224,3 +224,48 @@ void solve(int btn, int cnt)
 ```
 
 ---
+
+###문제ID : QUADTREE(AOJ_QUADTREE.cpp)
+
+2016.01.06.(금).
+
+직접 손으로 문제를 풀어보게 되면 자연스레 TREE를 그리게 된다(어쩌면 문제 이름 자체가 TREE이니 당연한 것일 수도 있겠다). 몇 번 풀어보면 TREE의 leaf node부터 상하를 반전시켜주면 되는 것을 알 수 있고 재귀함수를 사용하면 될 것 같은 강한 느낌을 받을 수 있다. 이때, 실제로 TREE를 구성하고 재귀적으로 상하를 반전시킬지 그냥 문자열을 읽으면서 처리할지 고민했는데 아무래도 두 번째 풀다보니 TREE를 직접 구성하지 않고도 충분히 풀 수 있다는 것이 떠올랐던 것 같다. 재귀함수로 문제를 풀기로 결심했으니 재귀함수의 return 값과 parameter를 무엇으로 할 지, base case는 무엇인지, recursive step은 무었인지 결정해주면 된다. 각각을 아래와 같이 결정하였다.
+
+1. 반환 값
+> 결국 프로그램에서 상하가 반전된 QUADTREE 문자열을 반환해줘야하는데 이 문자열을 재귀함수 내에서 하나의 전역 문자열 버퍼에 쓰기로 결정하면 전역 버퍼에 쓰인 문자열의 순서를 재배치 해주어야하는 등 귀찮아진다. 이런 경우 반환 값을 재귀함수의 반환 값으로 해주면 보다 쉬운 코딩이 가능하다. 따라서, 재귀함수는 현재 위치로부터 sub-tree를 상하반전 시킨 QUADTREE문자열을 반환한다.
+2. 인자
+> 입력 문자열에서 어디까지 읽었는지를 알 수 있어야 재귀함수의 각 단계에서 어디서부터 QUADTREE 변환을 시작할지를 결정할 수 있다. 따라서, 재귀함수의 인자로 '이번에 읽을 입력 문자열 위치'를 준다. CLOCKSYNC에서 재귀함수가 cnt를 인자로 가졌던 것과 유사하게 재귀적으로 유지되어야 할 값들의 경우 인자로 설정하면 편리하다.
+3. base case
+> base case는 당연히 'b', 'w'와 같이 한 색의 타일로 이뤄진 경우이다. 즉, 이번에 읽을 입력 문자열 위치에 'b' 또는 'w'가 쓰여 있다면 곧장 문자열 "b" 또는 "w"를 반환한다.
+4. recursive step
+> 이번에 읽을 입력 문자열 위치에 'x'가 쓰여 있다면 재귀적으로 sub-tree를 상하반전 시켜줘야 함을 의미한다. 이 경우, 순서대로 upper-left, upper-right, lower-left, lower-right를 재귀적으로 뒤집어주고, lower-left, lower-right, upper-left, upper-right 순으로 sub-tree의 순서를 뒤집어 반환해준다.
+
+base case와 recursive step을 정하는 것 만으로 문제가 풀린다는 것을 직관적으로 알 수 있다. 이제 문제가 실제로 제한시간 내에 풀릴지 고려해봐야 한다. 대체, 왜, 어째서 학부때부터 항상 까먹는지 이해할 수 없는 master theorem이 사용된다.
+
+    ![masterthm](https://github.com/wonseokdjango/AOJ/blob/master/images/masterthm.png)
+
+T(n) = 4 * T(n/4) + n 이므로 T(n) = nlgn이고, 이는 제한 시간에 문제를 충분히 풀 수 있음을 보여준다.
+
+```c_cpp
+
+string solve(int pos)
+{
+    // base case.
+    if (QUADTREE[pos] != 'x')
+    {
+        return QUADTREE.substr(pos,  1);
+    }
+
+    // recursive step.
+    string ul, ur, ll, lr;
+    ul = solve(pos + 1);
+    ur = solve(pos + 1 + ul.size());
+    ll = solve(pos + 1 + ul.size() + ur.size());
+    lr = solve(pos + 1 + ul.size() + ur.size() + ll.size());
+
+    return "x" + ll + lr + ul + ur;
+}
+
+```
+
+---
