@@ -333,3 +333,67 @@ int solve(int s, int e)
 ```
 
 ---
+
+###문제ID : FANMEETING(AOJ_FANMEETING.cpp)
+
+2017.01.14.(토).
+
+문제를 보고 무엇인가 비트 열의 곱셉으로 문제를 풀면 되겠다는 감을 잡는데는 성공했지만 문제 풀이의 핵심이었던 Karatsuba를 떠올리는 데는 실패했다. Karatsuba 알고리즘을 응용하면 O(n^2) 알고리즘을 O(n^lg3) 알고리즘으로 개선할 수 있다. x명의 멤버를 M(1) ~ M(x)로, y명의 팬을 F(1) ~ F(y)로 표현하기로 하자. 멤버와 팬을 나타내는 문자열을 곱셈 세로식처럼 적어보면 다음과 같이 되는 것을 알 수 있다.
+
+![mult](https://github.com/wonseokdjango/AOJ/blob/master/images/mult.png)
+
+위의 세로식 곱셈을 보면 곱셈 결과의 x-1번째 자리부터 y-1번째 자리가 각각 한 번의 라운드에서 이뤄지는 악수 또는 허그의 조합을 나타내고 있는 것을 알 수 있다. 따라서 'M'을 1로, 'F'를 0으로 자리올림을 무시하여 세로식을 계산한다면 [x-1, y-1]구간의 0의 갯수가 곧 전체 포옹의 경우의 수를 나타내게 된다. 이때, '자리올림을 무시하여'라는 부분이 구현할 때 까다로울 수도 있는데 이는 단순하게 곱하는 숫자들이 모두 x진법의 수라고 생각하면 쉽게 구현할 수 있다. 세로식을 살펴보면 결과값의 각 자리수는 최대 x개 수의 합으로 만들어지고 우리가 곱하려는 수는 모두 0 또는 1이므로 x진법을 가정하면 자리올림이 발생하지 않는다.
+
+이제 두 수의 곱에서 [x-1, y-1]구간의 0의 갯수가 전체 포옹의 경우의 수인 것을 알았으니 Karatsuba 알고리즘을 사용해서 두 수를 빠리게 곱하는 방법에 대해서 알아보자. 곱하기 원하는 두 수 a(y자리수)와 b(x자리수)가 주어졌다고 하자(y>=x라고 가정). a, b에 대해서 상위 하위 m자리수와 상위 y-m자리 수를 분리하여 표현하면 axb는 아래와 같이 표현될 수 있다(0<=m<=y).
+
+a x b
+> = (a1 x BASE^m + a0) x (b1 x BASE^m + b0)
+
+> = a1 x b1 x BASE^2m + (a1 x  b0 + a0 x b1) x BASE^m + a0 x b0
+
+BASE^m, BASE^2m 연산은 단순한 shift 연산이므로 곱셈으로 치지 않는다면, 위의 곱셈에는 총 4회의 곱셈이 필요하게 된다. Karatsuba는 여기서 필요한 곱셈의 횟수를 3회로 줄이는데 (a1 x b0 + a0 x b1) = (a0 + a1) x (b0 + b1) - a1 x b1 - a0 x b0임을 사용한다. 매 단계 m의 값을 자리수의 절반(오차1)로 설정한다면 계산의 복잡도는 T(n) = 3T(n/2) + cn과 같이 표현된다. 여기서 cn항은 절반에 가깝게 나눈 수들의 덧셈 및 뺄셈에 소비되는 계산량을 의미한다. 역시, master 정리를 활용해보면 계산의 복잡도가 O(n^lg3)이 되는 것을 확인할 수 있다.
+
+```c_cpp
+
+vector<int> dq(const vector<int>& a, const vector<int>& b)
+{
+    int asize = a.size();
+    int bsize = b.size();
+
+    // base case.
+    if (asize == 0 || bsize == 0)
+        return vector<int>();
+    if (asize < bsize)
+        return dq(b, a);
+    if (asize <= THRESHOLD)
+        return bf(a, b);
+
+    // recursive step.
+    int m = asize / 2;
+    vector<int> a0(a.begin(), a.begin() + m);
+    vector<int> a1(a.begin() + m, a.end());
+    vector<int> b0(b.begin(), b.begin() + min<int>(b.size(), m));
+    vector<int> b1(b.begin() + min<int>(b.size(), m), b.end());
+
+    vector<int> z0 = dq(a0, b0);
+    vector<int> z2 = dq(a1, b1);
+
+    add(a0, a1, 0);
+    add(b0, b1, 0);
+    vector<int> z1 = dq(a0, b0);
+    sub(z1, z0, 0);
+    sub(z1, z2, 0);
+
+    vector<int> ret;
+    add(ret, z0, 0);
+    add(ret, z1, m);
+    add(ret, z2, m + m);
+
+    return ret;
+}
+
+
+```
+
+---
+
