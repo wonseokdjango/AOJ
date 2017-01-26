@@ -1,13 +1,16 @@
 #include <cstdio>
 #include <limits>
 
-#define MAXLEN 100
-#define MAXVAL(A, B) ( ( (A) > (B) ) ? (A) : (B) )
+#define MAXLEN 101
+#define MAX_UPDATE(A, B) ( (A) = ( ( (A) > (B) ) ? (A) : (B) ) )
+
+const long long MAXNUM = std::numeric_limits<long long>::max();
 
 int C;
 int N, M;
-unsigned int A[MAXLEN + 1], B[MAXLEN + 1];
-unsigned int CACHE[MAXLEN + 1][MAXLEN + 1];
+long long A[MAXLEN];
+long long B[MAXLEN];
+int CACHE[MAXLEN][MAXLEN];
 
 int main(void)
 {
@@ -18,20 +21,20 @@ int main(void)
         // input.
         scanf(" %d %d", &N, &M);
         for (int a = 0; a < N; ++a)
-            scanf(" %d", &A[a]);
+            scanf(" %lld", &A[a]);
         for (int b = 0; b < M; ++b)
-            scanf(" %d", &B[b]);
-        A[N] = std::numeric_limits<int>::max() + 1;
-        B[M] = std::numeric_limits<int>::max() + 1;
+            scanf(" %lld", &B[b]);
+        
+        // padding.
+        A[N] = B[M] = MAXNUM;
 
-        // solve.
         for (int i = N - 1; i >= 0; --i)
         {
             CACHE[i][M] = 1;
             for (int ni = i + 1; ni < N; ++ni)
             {
                 if (A[i] < A[ni])
-                    CACHE[i][M] = MAXVAL(CACHE[i][M], 1 + CACHE[ni][M]);
+                    MAX_UPDATE(CACHE[i][M], 1 + CACHE[ni][M]);
             }
         }
         for (int j = M - 1; j >= 0; --j)
@@ -40,19 +43,12 @@ int main(void)
             for (int nj = j + 1; nj < M; ++nj)
             {
                 if (B[j] < B[nj])
-                    CACHE[N][j] = MAXVAL(CACHE[N][j], 1 + CACHE[N][nj]);
+                    MAX_UPDATE(CACHE[N][j], 1 + CACHE[N][nj]);
             }
         }
         CACHE[N][M] = 0;
-/*
-        for (int i = 0; i < N; ++i)
-            printf("%5d", CACHE[i][M]);
-        printf("\n");
-
-        for (int j = 0; j < M; ++j)
-            printf("%5d", CACHE[N][j]);
-        printf("\n");
-*/
+        
+        // solve.
         for (int i = N - 1; i >= 0; --i)
         {
             for (int j = M - 1; j >= 0; --j)
@@ -63,7 +59,7 @@ int main(void)
                     for (int ni = i + 1; ni <= N; ++ni)
                     {
                         if (A[i] < A[ni])
-                            CACHE[i][j] = MAXVAL(CACHE[i][j], 1 + CACHE[ni][j]);
+                            MAX_UPDATE(CACHE[i][j], 1 + CACHE[ni][j]);
                     }
                 }
                 else if (A[i] > B[j])
@@ -71,7 +67,7 @@ int main(void)
                     for (int nj = j + 1; nj <= M; ++nj)
                     {
                         if (B[j] < B[nj])
-                            CACHE[i][j] = MAXVAL(CACHE[i][j], 1 + CACHE[i][nj]);
+                            MAX_UPDATE(CACHE[i][j], 1 + CACHE[i][nj]);
                     }
                 }
                 else
@@ -81,21 +77,18 @@ int main(void)
                         for (int nj = j + 1; nj <= M; ++nj)
                         {
                             if (A[i] < A[ni] && B[j] < B[nj])
-                                CACHE[i][j] = MAXVAL(CACHE[i][j], 1 + CACHE[ni][nj]);
+                                MAX_UPDATE(CACHE[i][j], 1 + CACHE[ni][nj]);
                         }
                     }
                 }
             }
         }
 
-        unsigned int ans = 0;
+        int ans = 0;
         for (int i = 0; i < N; ++i)
         {
             for (int j = 0; j < M; ++j)
-            {
-                //printf("%5d", CACHE[i][j]);
-                ans = MAXVAL(ans, CACHE[i][j]);
-            }
+                MAX_UPDATE(ans, CACHE[i][j]);
         }
 
         // answer.
