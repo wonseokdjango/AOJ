@@ -397,3 +397,244 @@ vector<int> dq(const vector<int>& a, const vector<int>& b)
 
 ---
 
+###문제ID : WILDCARD(AOJ_WILDCARD.cpp)
+
+2017.02.05.(일).
+
+푼지 꽤 됬는데, 그 동안 README를 업데이트를 못해서 한 번에 업데이트 한다. 이 문제를 알기 쉽고 명확하게 표현해보면 다음과 같다.
+
+
+> WILDCARD를 포함하는 패턴을 나타내는 pattern[0...n], 일치 여부를 알고 싶은 문자열 str[0...m]이 주어질 때, str[0...m]이 pattern[0...n]으로 표현가능한 문자열인지의 여부를 true or false로 구하라.
+
+
+간단하게 DP를 적용해서 문제를 풀 수 있는데, 문제를 풀기 위해서 부분문제를 아래와 같이 정의하자.
+
+> SUB[i][j] := **pattern[i...n]**과 **str[j...m]**이 매칭이 가능한지의 여부. true or false.
+
+위와 같이 정의된 부분문제 SUB[i][j]를 풀기 위한  base case와 recursive step을 표현해 보면 아래와 같다.
+
+SUB[i][j] =
+> base case 1) **i == n인 경우**, 
+>> 더 이상 대응 시킬 pattern이 없는 상태이므로 j == m(즉, str도 모두 소비)인 경우에만 true, 아닌 경우 false.
+
+> base case 2) **j == m인 경우**,
+>> 더 이상 소비할 str이 없는 상태이므로 pattern[i...n]이 모두 '*'만 포함하고 있거나 i == n(즉, pattern도 모두 소비)인 경우에만 true, 아닌 경우 false.
+
+> recursive step 1) **pattern[i] != '*' && pattern[i] != '?'인 경우,**
+>> pattern[i] != str[j]인 경우 false, 아닌 경우 SUB[i + 1][j + 1].
+
+> recursive step 2) **pattern[i] == '*'인 경우,**
+>> j + 1 <= idx <=m 인 idx에 대하여 SUB[i + 1][idx]가 모두 false인 경우에만 false, 아닌 경우 true.
+
+> recursive step 3) **pattern[i] == '?'인 경우**
+>> SUB[i + 1][j + 1].
+
+```c_cpp
+
+char solve(int wIdx, int nIdx)
+{
+    // base cases.
+    if (wIdx == WILD.size())
+        return (nIdx == NAME.size()) ? TRUE : FALSE;
+    if (nIdx == NAME.size())
+    {   
+        int idx;
+        for (idx = wIdx; idx < WILD.size() && WILD[idx] == '*'; ++idx);
+
+        return (idx == WILD.size()) ? TRUE : FALSE;
+    }   
+
+    // dp step.
+    char& ret = CACHE[wIdx][nIdx];
+    if (ret == 0)
+    {   
+        // dp.
+        if (WILD[wIdx] == '?')
+            ret = solve(wIdx + 1, nIdx + 1); 
+        else if (WILD[wIdx] == '*')
+        {
+            ret = FALSE;
+            for (int rep = 0; rep <= NAME.size() - nIdx; ++rep)
+            {
+                if (solve(wIdx + 1, nIdx + rep) == TRUE)
+                {
+                    ret = TRUE;
+                    break;
+                }
+            }
+        }
+        else
+            ret = (WILD[wIdx] == NAME[nIdx] && solve(wIdx + 1, nIdx + 1) == TRUE) ? TRUE : FALSE;
+    }   
+
+    return ret;
+}
+
+
+```
+
+---
+
+###문제ID : TRIANGLEPATH(AOJ_TRIANGLE.cpp)
+
+2017.02.05.(일).
+
+굳이 README를 적을 필요가 느껴지지 않을 정도로 쉬운 DP문제에 속한다. 다만, 문제를 풀 때 부분문제의 정의를 어떻게 하냐에 따라서 문제를 푸는 과정이 간단해 질 수도, 복잡해 질 수도 있다는 사실을 알아두기 위해서는 도움이 되는 문제이다. 이 문제 같은 경우 부분문제의 정의를 아래의 두 가지 방법으로 해 볼 수 있다.
+
+> 방법1. **SUB[i][j]** := arr[i][j]에서 시작하는 TRIANGLEPATH의 최대 합.
+
+> 방법2. **SUB[i][j]** := arr[i][j]에서 종료하는 TRIANGLEPATH의 최대 합.
+
+만약, 이 문제를 푸는데 방법2.의 접근을 사용한다면 모든 부분문제를 풀어낸 후 삼각형의 밑변에 위치하는 원소들에 대해서 최대 값을 갖는 위치를 루프를 돌며 찾아주어야 할 것이다. 반면, 방법1.을 사용하여 문제를 푼다면 모든 부분문제를 풀어낸 후 단지 삼각형의 윗 꼭지점에 위치한 원소의 값이 곧 답이 될 것이다(모든 TRIANGLEPATH는 반드시 그 위치에서 시작하므로). 방법1.을 사용하여 문제를 풀 때, base case와 recursive step은 아래와 같다(삼각형의 높이를 h라고 하자).
+
+SUB[i][j] :=
+> base case) **i == h - 1**인 경우,
+>> 더 이상 가능한 TRIANGLEPATH가 없으므로 arr[i][j]의 값과 같다.
+> recursive step) **i != h - 1**인 경우,
+>> arr[i][j]부터 시작되는 두 TRIANGLEPATH에 대해서 더 큰 쪽을 답으로 한다. 즉, arr[i][j] + max(SUB[i+1][j], SUB[i+1][j+1]).
+
+```c_cpp
+
+for (int h = H - 2; h >= 0; --h)
+{
+    for (int idx = 0; idx < h + 1; ++idx)
+        TRIANGLE[h][idx] += MAXVAL(TRIANGLE[h + 1][idx], TRIANGLE[h + 1][idx + 1]);
+}
+
+```
+
+---
+
+###문제ID : LIS(AOJ_LIS.cpp)
+
+2017.02.05.(일).
+
+아주 유명한 DP문제로 쉽게 풀 수 있다. DP해법 이외에도 O(nlgn)짜리 솔루션이 알려져 있다. 이 풀이는 DP풀이 방법을 보인다. 부분 문제의 정의를 아래와 같이 설정한다.
+
+> SUB[i] := arr[i]에서 끝나는 LIS중 최대의 길이.
+
+위의 정의에 해당하는 모든 부분문제를 풀어주고 arr의 모든 원소에 대해 SUB의 최대 값을 찾아주면 답이 된다. SUB[i]를 풀기 위한 base case와 recursive step은 아래와 같다(arr의 길이를 len이라고 가정한다).
+
+SUB[i] =
+> base case) **i == 0**인 경우,
+>> LIS를 더 이상 만들어 나갈 수 없으므로 최대 길이를 갖는 LIS는 {arr[0]}이다. 따라서, SUB[i] = 1.
+> recursive step) **i != 0**인 경우,
+>> 0 <= idx < i인 idx에 대해서 SUB[i] = 1 + max(SUB[idx])이다. 즉, 가장 긴 LIS의 뒤에 자기 자신을 추가한다.
+
+```c_cpp
+
+// solve.
+for (int cur = 0; cur < N; ++cur)
+{
+    CACHE[cur] = 1;
+    for (int pre = cur - 1; pre >= 0; --pre)
+    {
+        if (NUMBERS[pre] < NUMBERS[cur])
+            CACHE[cur] = MAXVAL(CACHE[cur], CACHE[pre] + 1); 
+    }
+}
+
+```
+
+---
+
+###문제ID : JLIS(AOJ_JLIS.cpp)
+
+2017.02.05.(일).
+
+LIS에서 조금의 변형을 가한 문제에 불과했는데, base case 설정을 잘못해서 푸는데 애를 먹었다. 이 문제의 부분문제 정의를 아래와 같이 하였다(A의 길이를 n, B의 길이를 m이라고 하자).
+
+> SUB[i][j] := A[i], B[j]에서 시작하는 JLIS중 최대의 길이를 갖는 JLIS의 길이.
+
+여기서, "A[i], B[j]로 시작하는"의 의미는 JLIS에 포함된 원소 중 A에 속하는 모든 원소는 A[i...n-1]에서만 등장할 수 있고, B에 속하는 모든 원소는 B[j...m-1]에서만 등장할 수 있다는 의미이다. 이를 바탕으로 SUB[i][j]를 풀기 위해서 경우의 수를 떠올려보면 아래와 같은 경우가 있을 것이다.
+
+**case1.** A[i] ... B[j] ...
+
+**case2.** B[j] ... A[i] ...
+
+**case3.** (A[i] == B[j]) ...
+
+위에서 보인 각각의 경우를 염두에 두고, SUB[i][j]를 풀기 위한 base case와 recursive step을 보이면 아래와 같다.
+
+> base case1) **i == n**인 경우,
+>> SUB[i][j]는 B의 원소만을 사용하여 만들어지는 LIS의 길이와 같다.
+
+> base case2) **j == m**인 경우,
+>> SUB[i][j]는 A의 원소만을 사용하여 만들어지는 LIS의 길이와 같다.
+
+> recursive step1) **A[i] < B[j]**인 경우(case1.에 해당),
+>> i < ni <= n, A[i] < A[ni]인 ni에 대해서 SUB[i][j] = 1 + max(SUB[ni][j])
+
+> recursive step2) **A[i] > B[j]**인 경우(case2.에 해당),
+>> j < nj <= m, B[j] < B[nj]인 nj에 대하여 SUB[i][j] = 1 + max(SUB[i][nj])
+
+> recursive step3) **A[i] == B[j]**인 경우(case3.에 해당),
+>> i < ni <= n, A[i] < A[ni], j < nj <= m, B[j] < B[nj]인 ni, nj에 대하여 SUB[i][j] = 1 + max(SUB[i+1][j+1])
+
+사실 문제를 처음 풀 때, "SUB[i][j] := A[i], B[j]로 끝나는 JLIS중 최대의 길이를 갖는 JLIS의 길이"로 정의했었는데, 이 경우에도 문제를 풀 수는 있다. 이 때, 끝까지 깨닫지 못했던 것은 base case1, 2 였는데 어디에선가 반드시 A 또는 B만을 사용하여 LIS를 풀어어야 한다는 것을 캐치하지 못해 문제를 풀지 못 했었다. 앞으로는 base case를 설정할 때 주의하도록 해야겠다.
+
+```c_cpp
+
+// padding.
+A[N] = B[M] = MAXNUM;
+
+for (int i = N - 1; i >= 0; --i)
+{
+    CACHE[i][M] = 1;
+    for (int ni = i + 1; ni < N; ++ni)
+    {
+        if (A[i] < A[ni])
+            MAX_UPDATE(CACHE[i][M], 1 + CACHE[ni][M]);
+    }
+}
+for (int j = M - 1; j >= 0; --j)
+{
+    CACHE[N][j] = 1;
+    for (int nj = j + 1; nj < M; ++nj)
+    {
+        if (B[j] < B[nj])
+            MAX_UPDATE(CACHE[N][j], 1 + CACHE[N][nj]);
+    }
+}
+CACHE[N][M] = 0;
+
+// solve.
+for (int i = N - 1; i >= 0; --i)
+{
+    for (int j = M - 1; j >= 0; --j)
+    {
+        CACHE[i][j] = (A[i] == B[j]) ? 1 : 2;
+        if (A[i] < B[j])
+        {
+            for (int ni = i + 1; ni <= N; ++ni)
+            {
+                if (A[i] < A[ni])
+                    MAX_UPDATE(CACHE[i][j], 1 + CACHE[ni][j]);
+            }
+        }
+        else if (A[i] > B[j])
+        {
+            for (int nj = j + 1; nj <= M; ++nj)
+            {
+                if (B[j] < B[nj])
+                    MAX_UPDATE(CACHE[i][j], 1 + CACHE[i][nj]);
+            }
+        }
+        else
+        {
+            for (int ni = i + 1; ni <= N; ++ni)
+            {
+                for (int nj = j + 1; nj <= M; ++nj)
+                {
+                    if (A[i] < A[ni] && B[j] < B[nj])
+                        MAX_UPDATE(CACHE[i][j], 1 + CACHE[ni][nj]);
+                }
+            }
+        }
+    }
+}
+
+
+```
+
+---
