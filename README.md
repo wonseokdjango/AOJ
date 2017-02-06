@@ -638,3 +638,53 @@ for (int i = N - 1; i >= 0; --i)
 ```
 
 ---
+
+###문제ID : PI(AOJ_PI.cpp)
+
+2017.02.06.(월).
+
+전형적인 DP문제로 쉽게 풀 수 있다. 굳이 까다로운 점을 찾아보자면 문자열의 연속한 3~5자리 형태에 따라 난이도가 결정되는 부분인데 이는 아래의 사실을 깨닫으면 쉽게 극복할 수 있다. 
+
+> 문자열을 3~5자리로 끊어 읽는 경우만 생각한다. 8자리 숫자가 있을 때 3/3/2와 같이 끊어 읽는 것은 불가능하다.
+
+problem description에 몇 줄 더 적혀있으면 문제를 푸는 사람들이 혼란 없이 풀 수 있을 듯한데 문제의 출처가 CF라고하니 참고 넘어가는 수 밖에 없을 듯 하다.
+
+주어진 숫자를 PI, PI의 길이를 n이라고 할 때, 문제를 풀기 위한 부분 문제의 정의는 아래와 같다.
+
+> SUB[i] := PI[i...n - 1]을 외우기 위한 최소 난이도.
+
+정의된 부분 문제를 풀기 위한 base case, recursive step은 아래와 같다.
+
+> base case1) **i == n**인 경우,
+
+>> 외울 숫자가 더 이상 없는 경우이므로 SUB[i] = 0.
+
+> base case2) **i == n - 1 또는 i == n - 2**인 경우,
+
+>> 위에서 밝혔듯 모든 숫자는 3~5자리로 끊어서 일어야만 한다. 따라서, base case2와 같이 한 글자 또는 두 글자를 외우는 것은 불가능한 경우이다. 이와 같은 경우가 답에 포함되지 않도록 SUB[i] = +INF로 한다.
+
+> recursive step) **0 <= i < n - 1**인 경우,
+
+>> PI[pos...pos + group - 1]로 표현되는 group(3 <= group <= 5)개의 숫자를 외우기 위한 난이도를 dif(pos, group)라고 하자. 이 때, SUB[i]는 아래와 같이 표현될 수 있다. 이 때, array bound를 체크해주어야 하는 것에 주의 한다.
+
+>>> SUB[i] = min(CACHE[i + group] + dif(i, group));
+
+```c_cpp
+
+// base case.
+CACHE[PI.length()] = 0;
+CACHE[PI.length() - 1] = 10 * MAXLEN;
+CACHE[PI.length() - 2] = 10 * MAXLEN;
+
+// recursive step.
+for (int idx = PI.length() - 3; idx >= 0; --idx)
+{
+    for (int group = 3; idx + group - 1 < PI.length() && group <= 5; ++group)
+        CACHE[idx] = min(CACHE[idx], CACHE[idx + group] + difficulty(idx, group));
+}
+
+cout << CACHE[0] << endl;
+
+```
+
+---
