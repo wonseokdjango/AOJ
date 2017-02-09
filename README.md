@@ -802,3 +802,59 @@ int fibo(int n)
 ```
 
 ---
+
+###문제ID : TRIPATHCNT(AOJ_TRIPATHCNT.cpp)
+
+2017.02.09.(목).
+
+이 리포지토리에 있는 TRIANGLEPATH와 거의 일치하는 문제이다. 경로의 최대값을 구하는 방법은 TRIANGLEPATH와 100% 일치하며, 이 과정에서 아래와 같이 부분문제 하나를 더 풀어준다. h가 트리의 높이를 나타낸다고 하자.
+
+> SUB2[i][j] := TRIANGLE[i][j]에서 시작하는 최대 TRIANGLEPATH의 갯수.
+
+> base case) **i == h - 1**인 경우,
+
+>> 최대의 TRIANGLEPATH가 단, 하나의 원소로 구성되고 유일하므로 SUB2[i][j] = 1.
+
+> recursive step) **0 <= i < h - 1**인 경우,
+
+>> subcase1) **SUB[i + 1][j] > SUB[i + 1][j + 1]**인 경우,
+
+>>> 바로 아래 있는 원소를 이용해야만 최대의 경로를 얻을 수 있으므로 SUB2[i][j] = SUB2[i + 1][j]
+
+>> subcase2) **SUB[i + 1][j] < SUB[i + 1][j + 1]**인 경우,
+
+>>> 우측 아래 있는 원소를 이용해야만 최대의 경로를 얻을 수 있으므로 SUB2[i][j] = SUB2[i + 1][j + 1]
+
+>> subcase3) **SUB[i + 1][j] == SUB[i + 1][j + 1]**인 경우,
+
+>>> 바로 아래, 우측 아래 있는 원소 중 어떤 것을 사용해도 항상 최대 경로를 얻을 수 있으므로 SUB2[i][j] = SUB2[i + 1][j] +SUB2[i + 1][j + 1].
+
+```c_cpp
+
+// solve.
+for (int h = N - 2; h >= 0; --h)
+{
+    for (int pos = 0; pos < h + 1; ++pos)
+    {
+        if (PATHSUM[h + 1][pos] > PATHSUM[h + 1][pos + 1])
+        {
+            PATHSUM[h][pos] = TRIANGLE[h][pos] + PATHSUM[h + 1][pos];
+            PATHCNT[h][pos] = PATHCNT[h + 1][pos];
+        }
+        else if (PATHSUM[h + 1][pos] < PATHSUM[h + 1][pos + 1])
+        {
+            PATHSUM[h][pos] = TRIANGLE[h][pos] + PATHSUM[h + 1][pos + 1];
+            PATHCNT[h][pos] = PATHCNT[h + 1][pos + 1];
+        }
+        else
+        {
+            PATHSUM[h][pos] = TRIANGLE[h][pos] + PATHSUM[h + 1][pos];
+            PATHCNT[h][pos] = PATHCNT[h + 1][pos] + PATHCNT[h + 1][pos + 1];
+        }
+    }
+}
+
+
+```
+
+---
