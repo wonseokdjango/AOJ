@@ -762,3 +762,43 @@ for (int f = N - 1; f >= 0; --f)
 ```
 
 ---
+
+###문제ID : TILING2(AOJ_TILING2.cpp)
+
+2017.02.09.(목).
+
+매우 쉬운 문제로 DP의 대표적인 문제이나, 사실 피보나치 수열을 구하는 것과 다름 없어 DP를 쓸 필요도 없다.
+아래 그림과 같이 타일의 n번째 위치에서 하나의 세로 타일로 끝나거나, 두개의 가로 타일로 끝나는 경우 외에는 다른 경우가 존재하지 않으므로 아주 간단하게 아래의 점화식을 얻을 수 있다.
+
+![tile](https://github.com/wonseokdjango/AOJ/blob/master/images/tile.png)
+
+> SUB[i] := 2xi 타일을 채우는 경우의 수
+
+> SUB[i] = SUB[i - 1] + SUB[i - 2]
+
+```c_cpp
+
+int fibo(int n)
+{
+    if (n == 1)
+        return 1;
+    if (n == 2)
+        return 2;
+
+    int p = 2;
+    int pp = 1;
+    int cur = p + pp;
+
+    for (int i = 3; i < n; ++i)
+    {
+        pp = p;
+        p = cur;
+        cur = (p + pp) % MOD;
+    }
+
+    return cur;
+}
+
+```
+
+---
