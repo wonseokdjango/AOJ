@@ -688,3 +688,77 @@ cout << CACHE[0] << endl;
 ```
 
 ---
+
+###문제ID : QUANTIZE(AOJ_QUANTIZE.cpp)
+
+2017.02.09.(목).
+
+오랜 시간이 걸리지 않고 풀 수는 있지만 막상 풀고나서 설명하려하면 꽤나 애를 먹이는 문제이다. 간혹, DP문제인 것을 알고 풀이를 시작하더라도 부분문제 관계식을 찾는 것이 어려운 경우가 있는데 이런 경우에는 항상 기본으로 돌아가서 brute-force 솔루션을 생각해보도록 하자 (주어진 수열을 정렬하여 ***a[1], a[2], ... ,a[n]***를 얻었다고 하고, 이 수열을 S개의 양자화 값 ***q[1], q[2], ... ,q[S]***로 양자화하는 코드를 생각해보면 아래 DP풀이가 당연하게 느껴짐)
+
+이 문제를 풀기 위한 부분문제의 정의는 아래와 같다. 주어진 수열을 정렬하여 ***a[1], a[2], ... ,a[n]***을 얻었다고 가정하자.
+
+> SUB[f][q] := a[**f**...n]을 **q**개의 양자 값을 사용하여 양자화 할 때 오차 제곱의 최소 합.
+
+위와 같이 부분 문제를 정의하면 아래와 같이 base case와 recursive step을 도출할 수 있다.
+
+> base case1) **f >= n + 1**인 경우,
+>> 더 이상 양자화 해야할 값이 없으므로 오차는 0이다.
+
+> base case2) **f < n + 1**이고 **q <= 0**인 경우,
+>> 양자화 해야할 값은 남아 있지만 양자화에 사용할 수 있는 값이 남아있지 않으므로 +INF.
+
+> recursive step) **f < n + 1** 이고 **q > 0**인 경우,
+>> SUB[f][q] := min(***sq_error(f, len)*** + SUB[f + len][q - 1])
+
+위의 recursive step에서 ***sq_error(f, len)***이 등장하는데 이는 "a[f...f + len - 1]을 하나의 값을 사용하여 양자화 할 때, 오차 제곱의 최소 합"으로 정의된다. 이 값을 구하는 것은 어렵지 않은데, 하나의 양자화에 사용되는 값에 대하여 주어진 구간의 오차의 제곱 합을 구하는 공식을 살펴보면 이를 확인할 수 있다.
+
+f(s, e, q) := a[s...e]를 q를 사용하여 양자화 할 때 오차의 제곱의 합
+
+>= f(s, e, q)
+
+> = (a[s] - q)^2 + (a[s + 1] - q)^2 + ... + (a[e] - q)^2
+
+> = a[s]^2 + a[s + 1]^2 + ... + a[e]^2 + (e - s + 1)q^2 - 2q(a[s] + a[s + 1] + ... + a[e])
+
+f(s, e, q)를 q에 대해 미분하여 f(s, e, q)가 최소 값을 갖는 지점을 구해보면 q = avg(a[s...e])임을 알 수 있다. 즉, ***sq_error(f, len)***은 a[f...f + len - 1]을 a[f...f + len - 1]의 평균값을 사용하여 양자화 하였을 때 얻어지는 오차의 제곱합과 같다. 이때, 문제에서 요구하는 S개의 양자화에 사용되는 값은 모두 정수이므로 양자화에 사용될 q를 반올림하여 정수로 사용해야 함에 주의한다.
+
+```c_cpp
+
+// init.
+for (int row = 0; row < MAX_N + 1; ++row)
+{
+    for (int col = 0; col < MAX_Q + 1; ++col)
+        CACHE[row][col] = MAX_VAL;
+}
+for (int row = 0; row < MAX_N + 1; ++row)
+    CACHE[row][0] = MAX_VAL;
+for (int col = 0; col < MAX_Q + 1; ++col)
+    CACHE[N][col] = 0;
+
+// sort.
+sort(ARR, ARR + N);
+
+// solve.
+for (int f = N - 1; f >= 0; --f)
+{
+    for (int q = 1; q <= S; ++q)
+    {
+        int sum = ARR[f];
+        int sqr = ARR[f] * ARR[f];
+
+        for (int len = 1; f + len - 1 < N; ++len)
+        {
+            int avg = (int)((double)sum / len + 0.5);
+            int var = sqr - 2 * avg * sum + len * avg * avg;
+
+            MIN_UPDATE(CACHE[f][q], var + CACHE[f + len][q - 1]);
+
+            sum += ARR[f + len];
+            sqr += ARR[f + len] * ARR[f + len];
+        }
+    }
+}
+
+```
+
+---
