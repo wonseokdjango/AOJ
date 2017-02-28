@@ -900,3 +900,19 @@ for (int day = 1; day <= DAY; ++day)
 ```
 
 ---
+
+###문제ID : ASYMTILING(AOJ_ASYMTILING.cpp)
+
+2017.02.28.(월).
+
+이 리포지토리에서 다루는 TILING2문제와 크게 다른 점은 없다. 단지, TILING2 문제를 풀어준 후에 부분문제들을 가지고 대칭 타일링의 경우의 수를 빼주어야 한다는 점만이 다르다. 2 * n(n > 4) 너비의 사각형을 채우기 위한 비대칭 타일링의 수는 아래와 같이 서브 케이스를 나누어 경우의 수를 제하여 줌으로써 계산될 수 있다.
+
+> case 1 ) n 이 짝수인 경우
+
+> ![tile](https://github.com/wonseokdjango/AOJ/blob/master/images/asym_even.png)
+
+> case 2 ) n 이 홀수인 경우
+
+> ![tile](https://github.com/wonseokdjango/AOJ/blob/master/images/asym_odd.png)
+
+---
