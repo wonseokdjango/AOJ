@@ -915,4 +915,36 @@ for (int day = 1; day <= DAY; ++day)
 
 > ![tile](https://github.com/wonseokdjango/AOJ/blob/master/images/asym_odd.png)
 
+```c_cpp
+
+u64t ans = 0;
+
+if (1 == N)
+    ans = 0;
+else if (2 == N)
+    ans = 0;
+else if (3 == N)
+    ans = 2;
+else if (4 == N)
+    ans = 2;
+else if (0 == N % 2)
+{
+    ans += fibo(N);
+    ans += 2 * MOD;
+    ans -= 2 * fibo((N - 2) / 2);
+    ans %= MOD;
+    ans += MOD;
+    ans -= fibo((N - 4) / 2);
+    ans %= MOD;
+}
+else
+{
+    ans += fibo(N);
+    ans += MOD;
+    ans -= fibo((N - 1) / 2);
+    ans %= MOD;
+}
+
+```
+
 ---
