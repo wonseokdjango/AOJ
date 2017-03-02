@@ -948,3 +948,62 @@ else
 ```
 
 ---
+
+###문제ID : POLY(AOJ_POLY.cpp)
+
+2017.03.02.(목).
+
+점화식을 구하기가 조금은 까다롭게 느껴질 수 있는 문제이지만, 부분문제를 영리하게 정의하면 쉽고 빠르게 풀 수 있다. n개의 정사작형으로 만들 수 있는 각각의 폴리오미노를 최상단에 위치하는 정사각형의 갯수로 분리할 수 있는데, n이 2인 경우, 3인 경우에 대해서 예를 들어보면 아래의 그림과 같다.
+
+![poly](https://github.com/wonseokdjango/AOJ/blob/master/images/poly.png)
+
+n = 3인 경우를 잘 살펴보면, 3개 정사각형으로 만들 수 있는 최상단에 **top(1 <= top <= 2)**개 정사각형이 존재하는 폴리오미노는 **3 - top**개 정사각형으로 만들 수 있는 최상단에 **under(1 <= under <= 3 - top)**개 정사각형이 위치하는 폴리오미노 상단에 **top**개의 정사각형을 올려놓는 것으로 만들 수 있는 것을 알 수 있다(적색으로 표시한 부분을 살펴보면). 여기에 마지막으로 최상단에 3개의 정사각형이 위치하는 일직선 모양의 폴리오미노를 더해준다면 우리는 3개 정사각형으로 만들 수 있는 모든 폴리오미노를 구할 수 있다.
+
+이 과정을 수식으로 나타내기 위해서 부분문제를 아래와 같이 정의하자.
+
+> SUB[total][top] := total개 정사각형으로 만들 수 있는 최상단에 top개 정사각형이 위치하는 폴리오미노의 수
+
+위의 부분문제에 따라 기저사례와 재귀사례를 정의해주면 아래와 같다.
+
+> base case 1) **total < top**인 경우.
+
+>> 총 정사각형의 수보다 많은 수의 정사각형이 최상단에 위치할 수는 없으므로 SUB[total][top] = 0.
+
+> base case 2) **total == top**인 경우,
+
+>> total개 정사각형을 사용할 때, 최상단에 total개 정사각형이 위치하는 폴리오미노는 일직선 모양의 폴리오미노 뿐이다. 따라서, SUB[total][top] = 1.
+
+> recursive step) **total > top**인 경우,
+
+>> top개의 정사각형을 total - top개의 정사각형으로 만들어지는 최상단에 under개가 위치하는 폴리오미노의 위에 올려 놓으면 된다. top개 정사각형을 under개 정사각형 위에 올려놓을 수 있는 방법의 수는 top + under - 1개 이므로 아래와 같이 식을 얻을 수 있다.
+
+>> SUB[total][top] = sum{(top + under - 1) * SUB[total - top][under]}, 1 <= under < top
+
+빠른 풀이를 위해 테스트 케이스의 최대 크기에 대해 모든 부분문제를 다 풀어 놓은 뒤 각 테스트 케이스에서 SUB[total][0] + SUB[total][1] + ... + SUB[total][total]을 구해준다면 좀 더 효율적인 구현이 가능하다.
+
+```c_cpp
+
+// pre-processing.
+for (int total = 1; total <= MAXN; ++total)
+{
+    for (int top = 1; top < total; ++top)
+    {
+        CACHE[total][top] = 0;
+        for (int under = 1; under <= total - top; ++under)
+        {
+            CACHE[total][top] += (top + under - 1) * CACHE[total - top][under];
+            CACHE[total][top] %= MOD;
+        }
+    }
+    CACHE[total][total] = 1;
+}
+
+// solve.
+scanf(" %d", &N);
+int ans = 0;
+for (int top = 1; top <= N; ++top)
+    ans = (ans + CACHE[N][top]) % MOD;
+
+```
+
+---
